@@ -187,6 +187,7 @@ class Event {
         while(true){
             lock(thisLock)
             if(q.Count!=0){
+// 		    这里应该不对 不可以unlock 再run queue
                 unlock(thisLock)
                 q.Dequeue().run();
             }
@@ -198,6 +199,9 @@ class Event {
         }
     }
 }
+// 更好的优化应该是queue 和 flag单独建mutex
+// 对register： 只有flag = not trigger才需要queue的mutex
+// 对trigger:   上来直接设置flag 然后解锁 再抓queue的Mutex
 
 //Test process:
 register(A)
