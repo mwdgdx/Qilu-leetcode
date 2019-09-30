@@ -74,6 +74,7 @@ class Test{
 		lock(thisLock){ //lock when wirte flag
 			flag = true;
 		}
+// 		don't need to cover all the queue because after change the flag, register will not have access to queue
 		Console.WriteLine("Done Trigger!");
 		foreach(int v in tasks)
 			Console.WriteLine("do task: "+v);
