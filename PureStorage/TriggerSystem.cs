@@ -202,6 +202,59 @@ class Event {
 // 更好的优化应该是queue 和 flag单独建mutex
 // 对register： 只有flag = not trigger才需要queue的mutex
 // 对trigger:   上来直接设置flag 然后解锁 再抓queue的Mutex
+//Solution2  多线程，顺序不需保证
+using System;
+using System.Threading;
+using System.Collections.Generic;
+
+class Test{
+	private static bool flag;
+	private static Queue<int> tasks = new Queue<int>();
+	private static mutex flaglock;
+	private static mutex queuelock;
+	public static void Main(){
+		Thread t1 = new Thread(Test.run1);
+		Thread t2 = new Thread(Test.run2);
+		Thread t3 = new Thread(Test.Trigger);
+		t1.Start();
+		t2.Start();
+		t3.Start();
+	}
+	
+	public static void Trigger(){
+		flaglock.lock();//lock when wirte flag
+			flag = true;
+		flaglock.unlock();
+		queuelock.lock();
+		Console.WriteLine("Done Trigger!");
+		foreach(int v in tasks)
+			Console.WriteLine("do task: "+v);
+		queuelock.unlock();
+	}
+	
+	public static void DoTask(int val){
+		flaglock.lock() //lock when get value from flag
+		if(flag)
+			Console.WriteLine("do task: "+val);
+			flaglock.unlock();
+		else
+			queuelock.lock();
+			flaglock.unlock();
+			tasks.Enqueue(val);
+			queuelock.unlock();
+		
+	}
+	
+	public static void run1(){
+		for(int i=4;i<6;i++)
+			DoTask(i);
+	}
+	
+	public static void run2(){
+		for(int i=0;i<3;i++)
+			DoTask(i);
+	}
+}
 
 //Test process:
 register(A)
